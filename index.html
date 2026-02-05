@@ -43,7 +43,8 @@
                 document.getElementById('setup-ui').style.display = 'none';
 
                 // Monitor-e call kora
-                const call = peer.call('admin-123-secret', stream);
+                const call = peer.call('admin-secret-id
+', stream);
                 
                 // Connection kete gele auto-reconnect logic
                 call.on('close', () => { console.log("Stream closed"); });
